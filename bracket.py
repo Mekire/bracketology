@@ -1,3 +1,16 @@
+"""
+Provided with a json file containing team seedings, simulates the
+result of the NCAA tournament.  Winners are determined probabilistically
+by the seedings.
+
+For example, if two teams (a,b) play, the chance that team_a loses is
+the seeding of team_a divided by the seeding of team_a + team_b.
+
+With concrete numbers, the chance that a 1 seed loses to a 16 seed is
+1/17 or approximately 5.9%.  The chance that a 10 seed loses to a 2 seed
+is 10/12 or approximately 83%.
+"""
+
 from __future__ import print_function, division
 
 import json
@@ -26,6 +39,11 @@ class Team(object):
 
 
 class Node(object):
+    """
+    Represents a single Node in our bracket tree.  After calc_data
+    is run on the root node, the value of the node's data attribute
+    will be the team that won in that round.
+    """
     def __init__(self, depth=0, data=None, ):
         self.data = data
         self.left = None
@@ -33,17 +51,27 @@ class Node(object):
         self.depth = depth
         
     def calc_data(self):
-        self.data = self._predict_winner()
+        """
+        Calulates (if necessary) and returns the value of the team
+        placed in this Node.
+        """
+        if not self.data:
+            self.data = self._predict_winner()
+        return self.data
         
     def _predict_winner(self):
-        if not self.left.data and not self.right.data:
-            self.left.calc_data()
-            self.right.calc_data()
-        team_1, team_2 = self.left.data, self.right.data
+        """
+        Returns the winner of the game played between the children.
+        This requires that the children first play their games and
+        as such recursively populates all nodes below this point in
+        the tree.
+        """
+        team_1 = self.left.calc_data()
+        team_2 = self.right.calc_data()
         normalization = team_1.seed + team_2.seed
         pick = random.random() > team_1.seed/normalization
         winner = team_1 if pick else team_2
-        print("{} vs {}\n    Winner: {}".format(team_1, team_2, winner))
+        print("{} vs {}\n  Winner: {}\n".format(team_1, team_2, winner))
         return winner        
 
 
@@ -81,7 +109,7 @@ def main():
     finals = Node()
     get_empty_bracket(finals, teams)
     finals.calc_data()
-    print("Championship winner: {}".format(finals.data))
+    print("Championship winner: {}\n".format(finals.data))
     
     
 if __name__ == "__main__":
