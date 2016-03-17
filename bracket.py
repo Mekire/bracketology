@@ -100,14 +100,13 @@ def make_teams():
     for region in REGIONS:
         for seed in ROUND_1_ORDER:
             name = SEEDS[region][str(seed)]
-            teams.append(Team(name, int(seed), region))
+            teams.append(Team(name, seed, region))
     return teams
          
         
 def main():
     teams = make_teams()
-    finals = Node()
-    get_empty_bracket(finals, teams)
+    finals = get_empty_bracket(Node(), teams) 
     finals.calc_data()
     print("Championship winner: {}\n".format(finals.data))
     
